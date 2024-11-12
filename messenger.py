@@ -1,8 +1,8 @@
 from datetime import datetime
 import json
 
-with open('server-data.json','r') as fichier :
-    server = json.load(fichier)
+with open('server-data.json','r') as json_file :
+    server = json.load(json_file)
 
 
 def menu_principal():
@@ -33,9 +33,9 @@ def new_name() :
 def users():
     print ('')
     print('=== Utilisateurs === \n')
-    for i in range(len(server['users'])) :
-        print (server['users'][i]['id'],end='')
-        print('.',server['users'][i]['name'])
+    for user in server['users'] :
+        print (user['id'],end='')
+        print('.',user['name'])
     print('')
     print('o. Create user')
     print('x. Go back \n')
@@ -57,10 +57,10 @@ def channels():
     print ('')
     print('=== Channels === \n')
     ids={}
-    for i in range(len(server['channels'])) :
-        print (server['channels'][i]['id'],end='')
-        print('.',server['channels'][i]['name'])
-        ids[(str(server['channels'][i]['id']))]=''
+    for channel in server['channels'] :
+        print (channel['id'],end='')
+        print('.',channel['name'])
+        ids[(str(channel['id']))]=''
     print('')
     print('o. Create channel')
     print('x. Go back \n')
@@ -112,7 +112,6 @@ def see_members(channel_id) :
     else:
         print('Unknown option:', channel_id)
 
-
 def new_member(channel_id) :
     new_member_name = input('\nNew member name :')
     members = {i['name'] : i['id'] for i in server['users']}
@@ -126,8 +125,8 @@ def new_member(channel_id) :
         see_members(channel_id)
 
 def save():
-    with open('server-data.json','w') as fichier :
-        json.dump(server, fichier, indent=4, ensure_ascii=False)
+    with open('server-data.json','w') as json_file :
+        json.dump(server, json_file)
 
 
 menu_principal()
