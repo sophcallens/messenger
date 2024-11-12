@@ -1,22 +1,62 @@
 from datetime import datetime
 import json
 
-with open('server-data.json','r') as json_file :
-    server = json.load(json_file)
+class User:
+    def __init__(self, id: int, name: str):
+        self.id = id
+        self.name = name
 
+class Channel:
+    def __init__(self, id: int, name: str, member_ids: list):
+        self.id = id
+        self.name = name
+        self.member_ids = member_ids
+
+class Message:
+    def __init__(self, id: int, reception_date: str, sender_id: int, channel: int,content:str ):
+        self.id = id
+        self.reception_date = reception_date
+        self.sender_id = sender_id
+        self.channel = channel
+        self.content = content
+
+server_file_name = 'server-data.json'
+
+def load_server():
+    with open(server_file_name) as json_file :
+        server = json.load(json_file)
+    return server
+
+server = load_server()
+
+username = None
+
+def identification() :
+    global username 
+    username = input('x. Exit \n\nusername : ')
+    if username in {user['name'] for user in server['users']} :
+        print('\n-> Welcome',username,'!')
+        menu_principal()
+    elif username == 'x' :
+        save(server)
+        print('\n-> Bye! \n')
+    else : 
+        print('/!\ Unknown username :', username,'\n')
+        identification()
 
 def menu_principal():
+
     print ('')
-    print('=== Messenger === \n')
+    print('=== Menu principal === \n')
     print('1. See users')
     print('2. See channels \n')
-    print('x. Save and exit \n')
+    print('x. Save and Exit \n')
 
     choice = input('Select an option: ')
 
     if choice == 'x':
-        save()
-        print('\nBye! \n')
+        save(server)
+        print('\n-> Bye! \n')
     elif choice == '1' :
         users()
     elif choice == '2' :
@@ -60,14 +100,14 @@ def channels():
     for channel in server['channels'] :
         print (channel['id'],end='')
         print('.',channel['name'])
-        ids[(str(channel['id']))]=''
+        ids[(str(channel['id']))]=None
     print('')
     print('o. Create channel')
     print('x. Go back \n')
     choice3 = input('Select an option: ')
 
     if choice3 in ids :
-        see_members(choice3)
+        show_messages(choice3)
     elif choice3 =='o' :
         new_channel()
     elif choice3 =='x' :
@@ -76,41 +116,65 @@ def channels():
         print('Unknown option:', choice3)
         channels()
      
-def see_members(channel_id) :
-    test ={ str(i+1) for i in range(len(server['channels']))}
-    print(test)
+def show_messages(channel_id) :
 
-    if channel_id in test :
-        for channel in server['channels'] :
+    for channel in server['channels'] :
             if str(channel['id']) == str(channel_id) :
                 break
-        print(channel)
 
-        print('\n===',channel['name'],'members ===\n' )
-        n=1
+    print('\n===',channel['name'],'===\n' )
 
-        for member_id in channel['member_ids'] :
+    for message in server['messages'] :
+        if str(message['channel']) == str(channel_id) :
             for user in server['users'] :
-                if user['id'] == member_id :
-                    print(n,end='')
-                    print('.',user['name'])
-                    n+=1
+                if str(message['sender_id']) == str(user['id']) :
+                    print('['+user['name']+']',end=' ')
+            print(message['reception_date'])
+            print('->',message['content'],'\n')
+    print ('\ns. See members')
+    print ('x. Go back\n')
+    choice4 = input('Send a message : ')
+    if choice4 == 's' :
+        see_members(channel_id)
+    elif choice4 == 'x' :
+        channels()
+    else : 
+        send_message(channel_id, choice4)
 
-        
+def see_members(channel_id) :
 
-        print('\no. add member')
-        print('x. back\n')
+    for channel in server['channels'] :
+        if str(channel['id']) == str(channel_id) :
+            break
 
-        choice4 = input('Select an option: ')
-        if choice4 == 'o' :
-            new_member(channel_id)
-        elif choice4 =='x' :
-            channels()
-        else : 
-            print('Unknown option:', choice4)
+    print('\n===',channel['name'],'members ===\n' )
+
+    n=1
+    for member_id in channel['member_ids'] :
+        for user in server['users'] :
+            if user['id'] == member_id :
+                print(str(n)+'.',user['name'])
+                n+=1
+
     
-    else:
-        print('Unknown option:', channel_id)
+
+    print('\no. add member')
+    print('x. Go back\n')
+
+    choice4 = input('Select an option: ')
+    if choice4 == 'o' :
+        new_member(channel_id)
+    elif choice4 =='x' :
+        show_messages(channel_id)
+    else : 
+        print('Unknown option:', choice4)
+
+def send_message(channel_id, message) :
+    for user in server['users'] :
+        if user['name'] == username : 
+            sender_id = user['id']
+    server['messages'].append({'id': len(server['messages'])+1, 'reception_date': datetime.now().strftime("%d/%m/%Y %H:%M:%S"), 'sender_id': sender_id, 'channel': channel_id, 'content': message})
+    show_messages(channel_id)
 
 def new_member(channel_id) :
     new_member_name = input('\nNew member name :')
@@ -124,9 +188,12 @@ def new_member(channel_id) :
         print('Unknown name:', new_member_name)
         see_members(channel_id)
 
-def save():
-    with open('server-data.json','w') as json_file :
-        json.dump(server, json_file)
+def save(server_to_save : dict):
+    json.dump(server_to_save, open(server_file_name,'w'))
+
+print('\n=== Messenger ===\n')
+identification()
 
 
-menu_principal()
+
+

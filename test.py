@@ -19,5 +19,6 @@ server = {
     ]
 }
 
-members = {i['name'] : i['id'] for i in server['users']}
-print(members)
+print(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+
+
