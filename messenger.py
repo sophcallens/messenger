@@ -97,7 +97,6 @@ def identification() :
         clear_terminal()
         identification()
 
-
 def menu_principal():
 
     clear_terminal()
