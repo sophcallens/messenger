@@ -3,6 +3,7 @@ import json
 import os
 import time
 import argparse
+import sys
 
 
 BOLD = "\033[1m"   # Texte en gras
@@ -10,11 +11,6 @@ GRAY = "\033[90m"  # Texte en gris clair
 RED = "\033[91m"   # Texte en rouge
 RESET = "\033[0m"  # Réinitialisation
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--server','-s', help='enter json path')
-args = parser.parse_args()
-print(f'server json : {args.server}')
 
 
 class User:
@@ -72,15 +68,29 @@ class Server :
             new_server.messages.append(Message.from_dict(message))
         return new_server
 
+    
 
+#On veut mettre "server-data.json" dans server_file_name sachant qu'il est en paramètre
+parser = argparse.ArgumentParser()
+parser.add_argument('--server','-s', help='enter json path')
+args = parser.parse_args()
 server_file_name = args.server
+
+if server_file_name == None :
+    print('TypeError: Pas de server selectionéné, correction proposée : \npython messenger.py -s <server path>')
+    sys.exit(1)
+else : 
+    print ('Le server ouvert est : ', server_file_name)
+time.sleep(1)
+
 with open(server_file_name) as json_file :
     server_dict = json.load(json_file)
 
 server = Server.from_dict(server_dict)
 
 username = None
-unknown = False
+unknown_username = False
+unknown_username
 
 def identification() :
     print(f'\n{BOLD}=== Messenger ==={RESET}\n')
@@ -119,12 +129,14 @@ def menu_principal():
     if choice == 'x':
         save(server)
         print('\n-> Bye! \n')
+        time.sleep(1)
+        clear_terminal()
     elif choice == '1' :
         users()
     elif choice == '2' :
         channels()   
     else:
-        print('Unknown option:', choice)
+        print(f'Unknown option: {choice}')
         menu_principal()
 
 def new_name() :
@@ -262,7 +274,6 @@ def new_member(channel_id) :
         see_members(channel_id)
 
 def save(server_to_save : Server):
-    clear_terminal()
     new_server = {}
     new_server['users']= [user.to_dict() for user in server_to_save.users] 
     new_server['channels']=[channel.to_dict() for channel in server_to_save.channels] 
