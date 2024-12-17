@@ -2,11 +2,19 @@ from datetime import datetime
 import json
 import os
 import time
+import argparse
+
 
 BOLD = "\033[1m"   # Texte en gras
 GRAY = "\033[90m"  # Texte en gris clair
 RED = "\033[91m"   # Texte en rouge
 RESET = "\033[0m"  # Réinitialisation
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--server','-s', help='enter json path')
+args = parser.parse_args()
+print(f'server json : {args.server}')
 
 
 class User:
@@ -65,7 +73,7 @@ class Server :
         return new_server
 
 
-server_file_name = 'server-data.json'
+server_file_name = args.server
 with open(server_file_name) as json_file :
     server_dict = json.load(json_file)
 
@@ -270,8 +278,6 @@ def clear_terminal():
 clear_terminal()
 identification()
 
-
-#oscarceleplusbo
 
 
 
