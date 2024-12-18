@@ -95,17 +95,17 @@ def identification() :
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== Messenger ==={RESET}\n')
+    print(f'\n{BOLD}=== MESSENGER ==={RESET}\n')
     print('1. log in')
     print('2. sign in\n' )
-    print(f'{GRAY}x. Exit{RESET} \n')
+    print(f'{GRAY}x. Close Messenger{RESET} \n')
 
     #possibilité d'un message d'erreur
     global unknown_identification
     global choice_identification
 
     if unknown_identification == True : 
-        print(rf'{RED}/!\ Unknown option : {choice_users} {RESET}')
+        print(rf'{RED}/!\ Unknown option : {choice_identification} {RESET}')
         choice_identification = input('Select an option: ')
     else :
         choice_identification = input('\nSelect an option: ')
@@ -119,9 +119,10 @@ def identification() :
         sign_in()
     elif choice_identification =='x' :
         save(server)
-        print('\n-> Bye! \n')
+        print('\n-> Closing messenegr ... \n')
         time.sleep(1)
         clear_terminal()
+        sys.exit(0)
     else:
         unknown_identification = True
         identification()
@@ -130,8 +131,8 @@ def log_in():
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== Log in ==={RESET}\n')
-    print(f'{GRAY}x. Exit{RESET} \n')
+    print(f'\n{BOLD}=== LOG IN ==={RESET}\n')
+    print(f'{GRAY}x. Go back{RESET} \n')
 
     #possibilité d'un message d'erreur
     global unknown_login  
@@ -163,8 +164,8 @@ def sign_in() :
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== Sign in ==={RESET}\n')
-    print(f'{GRAY}x. Exit{RESET} \n')
+    print(f'\n{BOLD}=== SIGN IN ==={RESET}\n')
+    print(f'{GRAY}x. Go back{RESET} \n')
 
     #possibilité d'un message d'erreur
     global known_signin  
@@ -199,10 +200,10 @@ def menu_principal():
     
     #mise en page
     clear_terminal()
-    print(f"\n{BOLD}=== Menu principal === {RESET}\n ")
+    print(f"\n{BOLD}=== MAIN MENU === {RESET}\n ")
     print('1. See users')
     print('2. See channels \n')
-    print(f'{GRAY}x. Save and Exit{RESET} \n')
+    print(f'\n{GRAY}x. log out{RESET} \n')
 
     #possibilité d'un message d'erreur
     global unknown_menu_principal
@@ -218,9 +219,9 @@ def menu_principal():
     if choice_menu_principal == 'x':
         unknown_menu_principal = False
         save(server)
-        print('\n-> Bye! \n')
+        print(f'\n-> Bye {login}! \n')
         time.sleep(1)
-        clear_terminal()
+        identification()
     elif choice_menu_principal == '1' :
         unknown_menu_principal = False
         users()
@@ -235,10 +236,10 @@ def users():
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== Utilisateurs ==={RESET} \n')
+    print(f'\n{BOLD}=== USERS ==={RESET} \n')
     for user in server.users :
         print (f'{user.id}.{user.name}')
-    print(f'\n{GRAY}x. Go back {RESET}\n')
+    print(f'\n\n{GRAY}x. Go back {RESET}\n')
 
     #possibilité de message d'erreur
     global unknown_users
@@ -262,13 +263,12 @@ def channels():
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== Channels ==={RESET} \n')
+    print(f'\n{BOLD}=== CHANNELS ==={RESET} \n')
 
     for channel in server.channels :
         if login_user.id in channel.member_ids : 
-            print (channel.id,end='')
-            print('.',channel.name)
-    print(f'\n{GRAY}o. Create channel{RESET}')
+            print (f'{channel.id}. {channel.name}')
+    print(f'\n\n{GRAY}o. Create channel{RESET}')
     print(f'{GRAY}x. Go back {RESET}\n')
 
     #possibilité d'un message d'erreur
@@ -300,7 +300,8 @@ def new_channel() :
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== New channel ==={RESET} \n')
+    print(f'\n{BOLD}=== NEW CHANNEL ==={RESET} \n')
+    print(f'{GRAY}x. Go back{RESET}\n')
 
     #possibilité d'un message d'erreur
     global known_new_channel 
@@ -308,18 +309,21 @@ def new_channel() :
 
     if known_new_channel == True : 
         print(rf'{RED}/!\ Already existing channel : {choice_new_channel} {RESET}')
-        choice_new_channel = input('Select an option: ')
+        choice_new_channel = input('New channel name: ')
     else :
-        choice_new_channel = input('\nSelect an option: ')
+        choice_new_channel = input('\nNew channel name: ')
 
     #réaction selon l'option choisie
     if choice_new_channel in {channel.name for channel in server.channels} : 
-        known_new_channel = False
-        server.channels.append(Channel(len(server.channels)+1, new_channel, [login_user.id]))
-        channels()
-    else : 
         known_new_channel = True
         new_channel()
+    elif choice_new_channel == 'x' :
+        known_new_channel = False
+        channels()
+    else : 
+        known_new_channel = False
+        server.channels.append(Channel(len(server.channels)+1, choice_new_channel, [login_user.id]))
+        channels()
 
 def show_messages(channel_id : str) :
 
@@ -356,7 +360,7 @@ def see_members(channel : Channel) :
     #mise en page
     clear_terminal()
 
-    print(f'\n{BOLD}=== {channel.name} members ==={RESET}\n' )
+    print(f'\n{BOLD}=== {channel.name} MEMEBRS ==={RESET}\n' )
 
     n=1
     for member_id in channel.member_ids :
@@ -393,7 +397,7 @@ def new_member(channel : Channel) :
 
     #mise en page
     clear_terminal()
-    print(f'\n{BOLD}=== New {channel.name} member ==={RESET}\n' )
+    print(f'\n{BOLD}=== NEW {channel.name} MEMEBR ==={RESET}\n' )
 
     #possibilité d'un message d'erreur
     global known_new_member
