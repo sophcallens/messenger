@@ -52,15 +52,16 @@ class Message:
         return {'id':self.id,'reception_date':self.reception_date,'sender_id':self.sender_id,'channel':self.channel,'content':self.content}
 
 class Server :
-    def __init__(self,users : list['User'],channels: list['Channel'], messages: list['Message']) :
+    def __init__(self,file_name : str, users : list['User'],channels: list['Channel'], messages: list['Message']) :
+        self.file_name = file_name
         self.users = users
         self.channels = channels
         self.messages = messages
     
     @classmethod
-    def from_dict(cls,server_dict : dict) -> 'Server' :
+    def from_dict(cls,file_name,server_dict : dict) -> 'Server' :
 
-        new_server = Server([],[],[])
+        new_server = Server(file_name,[],[],[])
         for user in server_dict['users'] :
             new_server.users.append(User.from_dict(user))
         for channel in server_dict['channels'] : 
@@ -69,377 +70,357 @@ class Server :
             new_server.messages.append(Message.from_dict(message))
         return new_server
 
-choice_identification = None
-login = None
-login_user = None
-signin = None
-choice_menu_principal = None
-choice_users = None
-choice_channels = None
-choice_new_channel = None
-choice_see_members = None
-choice_new_member = None
+class Client : 
+    def __init__(self, server: Server,  choice_identification : None | str = None, login : None | str = None, login_user : None | User = None, signin : None | str = None, choice_menu_principal : None | str = None, choice_users : None | str = None, choice_channels : None | str = None, choice_new_channel : None | str = None, choice_see_members : None | str = None, choice_new_member : None | str = None, unknown_identification : None | bool = None, unknown_login : None | bool = None, known_signin : None | bool = None, unknown_menu_principal : None | bool = None, unknown_users : None | bool = None, unknown_channels : None | bool = None, known_new_channel : None | bool = None, unknown_see_members : None | bool = None, known_new_member : None | bool = None, unknown_new_member : None | bool = None) :
 
-unknown_identification = False
-unknown_login = False
-known_signin = False
-unknown_menu_principal = False
-unknown_users = False
-unknown_channels = False
-known_new_channel = False
-unknown_see_members = False
-known_new_member = False
-unknown_new_member = False
+        self.server = server
+        self.choice_identification = choice_identification
+        self.login = login
+        self.login_user = login_user
+        self.signin = signin
+        self.choice_menu_principal = choice_menu_principal
+        self.choice_users = choice_users
+        self.choice_channels = choice_channels
+        self.choice_new_channel = choice_new_channel
+        self.choice_see_members = choice_see_members
+        self.choice_new_member = choice_new_member
 
-def identification() :
+        self.unknown_identification = unknown_identification
+        self.unknown_login = unknown_login
+        self.known_signin = known_signin
+        self.unknown_menu_principal = unknown_menu_principal
+        self.unknown_users = unknown_users
+        self.unknown_channels = unknown_channels
+        self.known_new_channel = known_new_channel
+        self.unknown_see_members = unknown_see_members
+        self.known_new_member = known_new_member
+        self.unknown_new_member = unknown_new_member
 
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== MESSENGER ==={RESET}\n')
-    print('1. log in')
-    print('2. sign in\n' )
-    print(f'{GRAY}x. Close Messenger{RESET} \n')
-
-    #possibilité d'un message d'erreur
-    global unknown_identification
-    global choice_identification
-
-    if unknown_identification == True : 
-        print(rf'{RED}/!\ Unknown option : {choice_identification} {RESET}')
-        choice_identification = input('Select an option: ')
-    else :
-        choice_identification = input('\nSelect an option: ')
-
-    #réaction selon l'option choisie 
-    if choice_identification =='1' :
-        unknown_identification = False
-        log_in()
-    elif choice_identification =='2' :
-        unknown_identification = False
-        sign_in()
-    elif choice_identification =='x' :
-        save(server)
-        print('\n-> Closing messenegr ... \n')
-        time.sleep(1)
-        clear_terminal()
-        sys.exit(0)
-    else:
-        unknown_identification = True
-        identification()
-
-def log_in(): 
-
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== LOG IN ==={RESET}\n')
-    print(f'{GRAY}x. Go back{RESET} \n')
-
-    #possibilité d'un message d'erreur
-    global unknown_login  
-    global login 
-    global login_user
-
-    if unknown_login == True : 
-        print(rf'{RED}/!\ Unknown username : {login} {RESET}')
-        login = input( 'username : ')
-    else :
-        login = input('\nusername : ')
-
-    #réaction selon l'option choisie 
-    dico_test = {user.name : user for user in server.users}
-    if login in dico_test :
-        login_user = dico_test[login] #on en aura besoin dans la fonction channels et new_member
-        unknown_login = False
-        print('\n-> Welcome',login,'!')
-        time.sleep(1)
-        menu_principal()
-    elif login == 'x' :
-        unknown_login = False
-        identification()
-    else : 
-        unknown_login = True
-        log_in()
-
-def sign_in() :
-
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== SIGN IN ==={RESET}\n')
-    print(f'{GRAY}x. Go back{RESET} \n')
-
-    #possibilité d'un message d'erreur
-    global known_signin  
-    global signin 
-
-    if known_signin == True : 
-        print(rf'{RED}/!\ Already existing username : {signin} {RESET}')
-        signin = input( 'Your name : ')
-    else :
-        signin = input('\nYour name : ')
-
-    #réaction selon l'option choisie 
-    if signin in {user.name for user in server.users} :
-        known_signin = True
-        sign_in()
-    elif signin == 'x' :
-        known_signin = False
-        identification()
-    else : 
-        known_signin = False
-        server.users.append(User(len(server.users)+1, signin))
-        identification()
-
-    #réaction selon l'option choisie 
-    if signin == 'x' :
-        identification()
-    else :
-        server.users.append(User(len(server.users)+1, signin))
-        identification()
-
-def menu_principal():
     
-    #mise en page
-    clear_terminal()
-    print(f"\n{BOLD}=== MAIN MENU === {RESET}\n ")
-    print('1. See users')
-    print('2. See channels \n')
-    print(f'\n{GRAY}x. log out{RESET} \n')
 
-    #possibilité d'un message d'erreur
-    global unknown_menu_principal
-    global choice_menu_principal
+    def identification(self) :
 
-    if unknown_menu_principal == True : 
-        print(rf'{RED}/!\ Unknown option : {choice_menu_principal} {RESET}')
-        choice_menu_principal = input('Select an option: ')
-    else :
-        choice_menu_principal = input('\nSelect an option: ')
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== MESSENGER ==={RESET}\n')
+        print('1. log in')
+        print('2. sign in\n' )
+        print(f'{GRAY}x. Close Messenger{RESET} \n')
 
-    #réaction selon l'option choisie 
-    if choice_menu_principal == 'x':
-        unknown_menu_principal = False
-        save(server)
-        print(f'\n-> Bye {login}! \n')
-        time.sleep(1)
-        identification()
-    elif choice_menu_principal == '1' :
-        unknown_menu_principal = False
-        users()
-    elif choice_menu_principal == '2' :
-        unknown_menu_principal = False
-        channels()   
-    else:
-        unknown_menu_principal = True
-        menu_principal()
+        #possibilité d'un message d'erreur
+        if self.unknown_identification == True : 
+            print(rf'{RED}/!\ Unknown option : {self.choice_identification} {RESET}')
+            self.choice_identification = input('Select an option: ')
+        else :
+            self.choice_identification = input('\nSelect an option: ')
 
-def users():
+        #réaction selon l'option choisie 
+        if self.choice_identification =='1' :
+            self.unknown_identification = False
+            self.log_in()
+        elif self.choice_identification =='2' :
+            self.unknown_identification = False
+            self.sign_in()
+        elif self.choice_identification =='x' :
+            self.save()
+            print('\n-> Closing messenegr ... \n')
+            time.sleep(1)
+            self.clear_terminal()
+            sys.exit(0)
+        else:
+            self.unknown_identification = True
+            self.identification()
 
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== USERS ==={RESET} \n')
-    for user in server.users :
-        print (f'{user.id}.{user.name}')
-    print(f'\n\n{GRAY}x. Go back {RESET}\n')
+    def log_in(self): 
 
-    #possibilité de message d'erreur
-    global unknown_users
-    global choice_users
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== LOG IN ==={RESET}\n')
+        print(f'{GRAY}x. Go back{RESET} \n')
 
-    if unknown_users == True : 
-        print(rf'{RED}/!\ Unknown option : {choice_users} {RESET}')
-        choice_users = input('Select an option: ')
-    else :
-        choice_users = input('\nSelect an option: ')
+        #possibilité d'un message d'erreur
+        if self.unknown_login == True : 
+            print(rf'{RED}/!\ Unknown username : {self.login} {RESET}')
+            self.login = input( 'username : ')
+        else :
+            self.login = input('\nusername : ')
 
-    #réaction selon l'option choisie
-    if choice_users =='x' :
-        unknown_users = False
-        menu_principal()
-    else:
-        unknown_users = True
-        users()
+        #réaction selon l'option choisie 
+        dico_test = {user.name : user for user in self.server.users}
+        if self.login in dico_test :
+            self.login_user = dico_test[self.login] #on en aura besoin dans la fonction channels et new_member
+            self.unknown_login = False
+            print('\n-> Welcome',self.login,'!')
+            time.sleep(1)
+            self.menu_principal()
+        elif self.login == 'x' :
+            self.unknown_login = False
+            self.identification()
+        else : 
+            self.unknown_login = True
+            self.log_in()
 
-def channels():
+    def sign_in(self) :
 
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== CHANNELS ==={RESET} \n')
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== SIGN IN ==={RESET}\n')
+        print(f'{GRAY}x. Go back{RESET} \n')
 
-    for channel in server.channels :
-        if login_user.id in channel.member_ids : 
-            print (f'{channel.id}. {channel.name}')
-    print(f'\n\n{GRAY}o. Create channel{RESET}')
-    print(f'{GRAY}x. Go back {RESET}\n')
+        #possibilité d'un message d'erreur
+        if self.known_signin == True : 
+            print(rf'{RED}/!\ Already existing username : {self.signin} {RESET}')
+            self.signin = input( 'Your name : ')
+        else :
+            self.signin = input('\nYour name : ')
 
-    #possibilité d'un message d'erreur
-    global unknown_channels
-    global choice_channels
+        #réaction selon l'option choisie 
+        if self.signin in {user.name for user in self.server.users} :
+            self.known_signin = True
+            self.sign_in()
+        elif self.signin == 'x' :
+            self.known_signin = False
+            self.identification()
+        else : 
+            self.known_signin = False
+            self.server.users.append(User(len(self.server.users)+1, self.signin))
+            self.identification()
 
-    if unknown_channels == True : 
-        print(rf'{RED}/!\ Unknown option : {choice_channels} {RESET}')
-        choice_channels = input('Select an option: ')
-    else :
-        choice_channels = input('\nSelect an option: ')
+        #réaction selon l'option choisie 
+        if self.signin == 'x' :
+            self.identification()
+        else :
+            self.server.users.append(User(len(self.server.users)+1, self.signin))
+            self.identification()
 
-    #réaction selon l'option choisie
-    ids={str(channel.id) : channel for channel in server.channels}
-    if choice_channels in ids and login_user.id in ids[choice_channels].member_ids :
-        unknown_channels = False
-        show_messages(choice_channels)
-    elif choice_channels =='o' :
-        unknown_channels = False
-        new_channel()
-    elif choice_channels =='x' :
-        unknown_channels = False
-        menu_principal()
-    else:
-        unknown_channels = True
-        channels()
-     
-def new_channel() :
+    def menu_principal(self):
+        
+        #mise en page
+        self.clear_terminal()
+        print(f"\n{BOLD}=== MAIN MENU === {RESET}\n ")
+        print('1. See users')
+        print('2. See channels \n')
+        print(f'\n{GRAY}x. log out{RESET} \n')
 
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== NEW CHANNEL ==={RESET} \n')
-    print(f'{GRAY}x. Go back{RESET}\n')
+        #possibilité d'un message d'erreur
+        if self.unknown_menu_principal == True : 
+            print(rf'{RED}/!\ Unknown option : {self.choice_menu_principal} {RESET}')
+            self.choice_menu_principal = input('Select an option: ')
+        else :
+            self.choice_menu_principal = input('\nSelect an option: ')
 
-    #possibilité d'un message d'erreur
-    global known_new_channel 
-    global choice_new_channel
+        #réaction selon l'option choisie 
+        if self.choice_menu_principal == 'x':
+            self.unknown_menu_principal = False
+            self.save()
+            print(f'\n-> Bye {self.login}! \n')
+            time.sleep(1)
+            self.identification()
+        elif self.choice_menu_principal == '1' :
+            self.unknown_menu_principal = False
+            self.users()
+        elif self.choice_menu_principal == '2' :
+            self.unknown_menu_principal = False
+            self.channels()   
+        else:
+            self.unknown_menu_principal = True
+            self.menu_principal()
 
-    if known_new_channel == True : 
-        print(rf'{RED}/!\ Already existing channel : {choice_new_channel} {RESET}')
-        choice_new_channel = input('New channel name: ')
-    else :
-        choice_new_channel = input('\nNew channel name: ')
+    def users(self):
 
-    #réaction selon l'option choisie
-    if choice_new_channel in {channel.name for channel in server.channels} : 
-        known_new_channel = True
-        new_channel()
-    elif choice_new_channel == 'x' :
-        known_new_channel = False
-        channels()
-    else : 
-        known_new_channel = False
-        server.channels.append(Channel(len(server.channels)+1, choice_new_channel, [login_user.id]))
-        channels()
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== USERS ==={RESET} \n')
+        for user in self.server.users :
+            print (f'{user.id}.{user.name}')
+        print(f'\n\n{GRAY}x. Go back {RESET}\n')
 
-def show_messages(channel_id : str) :
+        #possibilité de message d'erreur
+        if self.unknown_users == True : 
+            print(rf'{RED}/!\ Unknown option : {self.choice_users} {RESET}')
+            self.choice_users = input('Select an option: ')
+        else :
+            self.choice_users = input('\nSelect an option: ')
 
-    #mise en page
-    clear_terminal()
-    for channel in server.channels :
-            if str(channel.id) == str(channel_id) :
-                break
-    print(f"{BOLD}=== {channel.name} ==={RESET}\n ")
+        #réaction selon l'option choisie
+        if self.choice_users =='x' :
+            self.unknown_users = False
+            self.menu_principal()
+        else:
+            self.unknown_users = True
+            self.users()
 
-    for message in server.messages :
-        if str(message.channel) == str(channel.id) :
-            for user in server.users :
-                if str(message.sender_id) == str(user.id) :
-                    print('[' + user.name + ']',end=' ')
-            print(f"{GRAY}{message.reception_date}{RESET}")
-            print('->',message.content,'\n')
-    print (f'\n{GRAY}s. See members')
-    print (f'x. Go back{RESET}\n')
+    def channels(self):
 
-    #envoyer un message ou choisir une option
-    choice_show_messages = input( 'Send a message : ')
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== CHANNELS ==={RESET} \n')
 
-    if choice_show_messages == 's' :
-        see_members(channel)
-    elif choice_show_messages == 'x' :
-        channels()
-    else : #envoie d'un message
-        server.messages.append(Message(len(server.messages)+1, datetime.now().strftime("%d/%m/%Y %H:%M:%S"), login_user.id, channel_id, choice_show_messages))
-        show_messages(str(channel.id))
+        for channel in self.server.channels :
+            if self.login_user.id in channel.member_ids : 
+                print (f'{channel.id}. {channel.name}')
+        print(f'\n\n{GRAY}o. Create channel{RESET}')
+        print(f'{GRAY}x. Go back {RESET}\n')
 
-def see_members(channel : Channel) :
+        #possibilité d'un message d'erreur
+        if self.unknown_channels == True : 
+            print(rf'{RED}/!\ Unknown option : {self.choice_channels} {RESET}')
+            self.choice_channels = input('Select an option: ')
+        else :
+            self.choice_channels = input('\nSelect an option: ')
 
-    #mise en page
-    clear_terminal()
+        #réaction selon l'option choisie
+        ids={str(channel.id) : channel for channel in self.server.channels}
+        if self.choice_channels in ids and self.login_user.id in ids[self.choice_channels].member_ids :
+            self.unknown_channels = False
+            self.show_messages(self.choice_channels)
+        elif self.choice_channels =='o' :
+            self.unknown_channels = False
+            self.new_channel()
+        elif self.choice_channels =='x' :
+            self.unknown_channels = False
+            self.menu_principal()
+        else:
+            self.unknown_channels = True
+            self.channels()
+        
+    def new_channel(self) :
 
-    print(f'\n{BOLD}=== {channel.name} MEMEBRS ==={RESET}\n' )
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== NEW CHANNEL ==={RESET} \n')
+        print(f'{GRAY}x. Go back{RESET}\n')
 
-    n=1
-    for member_id in channel.member_ids :
-        for user in server.users :
-            if user.id == member_id :
-                print(str(n)+'.',user.name)
-                n+=1
+        #possibilité d'un message d'erreur
+        if self.known_new_channel == True : 
+            print(rf'{RED}/!\ Already existing channel : {self.choice_new_channel} {RESET}')
+            self.choice_new_channel = input('New channel name: ')
+        else :
+            self.choice_new_channel = input('\nNew channel name: ')
 
-    print(f'\n{GRAY}o. add member')
-    print(f'x. Go back{RESET}\n')
+        #réaction selon l'option choisie
+        if self.choice_new_channel in {channel.name for channel in self.server.channels} : 
+            self.known_new_channel = True
+            self.new_channel()
+        elif self.choice_new_channel == 'x' :
+            self.known_new_channel = False
+            self.channels()
+        else : 
+            self.known_new_channel = False
+            self.server.channels.append(Channel(len(self.server.channels)+1, self.choice_new_channel, [self.login_user.id]))
+            self.channels()
 
-    #possibilité d'un message d'erreur
-    global unknown_see_members
-    global choice_see_members
+    def show_messages(self, channel_id : str) :
 
-    if unknown_see_members == True : 
-        print(rf'{RED}/!\ Unknown option : {choice_see_members} {RESET}')
-        choice_see_members = input( 'Select an option: : ')
-    else :
-        choice_see_members = input('\nSelect an option: : ')
+        #mise en page
+        self.clear_terminal()
+        for channel in self.server.channels :
+                if str(channel.id) == str(channel_id) :
+                    break
+        print(f"{BOLD}=== {channel.name} ==={RESET}\n ")
 
-    #réaction selon l'option choisie
-    if choice_see_members == 'o' :
-        unknown_see_members = False
-        new_member(channel)
-    elif choice_see_members =='x' :
-        unknown_see_members = False
-        show_messages(str(channel.id))
-    else : 
-        unknown_see_members = True
-        see_members(channel)
+        for message in self.server.messages :
+            if str(message.channel) == str(channel.id) :
+                for user in self.server.users :
+                    if str(message.sender_id) == str(user.id) :
+                        print('[' + user.name + ']',end=' ')
+                print(f"{GRAY}{message.reception_date}{RESET}")
+                print('->',message.content,'\n')
+        print (f'\n{GRAY}s. See members')
+        print (f'x. Go back{RESET}\n')
 
-def new_member(channel : Channel) :
+        #envoyer un message ou choisir une option
+        self.choice_show_messages = input( 'Send a message : ')
 
-    #mise en page
-    clear_terminal()
-    print(f'\n{BOLD}=== NEW {channel.name} MEMEBR ==={RESET}\n' )
+        if self.choice_show_messages == 's' :
+            self.see_members(channel)
+        elif self.choice_show_messages == 'x' :
+            self.channels()
+        else : #envoie d'un message
+            self.server.messages.append(Message(len(self.server.messages)+1, datetime.now().strftime("%d/%m/%Y %H:%M:%S"), self.login_user.id, channel_id, self.choice_show_messages))
+            self.show_messages(str(channel.id))
 
-    #possibilité d'un message d'erreur
-    global known_new_member
-    global unknown_new_member
-    global choice_new_members
+    def see_members(self, channel : Channel) :
 
-    if known_new_member == True : 
-        print(rf'{RED}/!\ Already registered memebr : {choice_new_members} {RESET}')
-        choice_new_members = input( 'New member name: ')
-    elif unknown_new_member == True :
-        print(rf'{RED}/!\ Unknown username : {choice_new_members} {RESET}')
-        choice_new_members = input( 'New member name: ')
-    else :
-        choice_new_members = input('\nNew member name: ')
+        #mise en page
+        self.clear_terminal()
 
-    #réaction selon l'option choisie
-    id_to_name = { user.id : user.name for user in server.users }
-    name_to_id = { user.name : user.id for user in server.users }
-    if choice_new_members in {id_to_name[id] for id in channel.member_ids}:
-        known_new_member = True
-        new_member(channel)
-    elif choice_new_members not in name_to_id :
-        unknown_new_member = True
-        new_member(channel)
-    else : 
-        known_new_member = False
-        unknown_new_member = False
-        channel.member_ids.append(name_to_id[choice_new_members])
-        see_members(channel)
+        print(f'\n{BOLD}=== {channel.name} MEMEBRS ==={RESET}\n' )
 
-def save(server_to_save : Server):
-    new_server = {}
-    new_server['users']= [user.to_dict() for user in server_to_save.users] 
-    new_server['channels']=[channel.to_dict() for channel in server_to_save.channels] 
-    new_server['messages'] = [message.to_dict() for message in server_to_save.messages]
-    
-    with open(server_file_name,'w') as json_file :
-        json.dump(new_server,json_file)
+        n=1
+        for member_id in channel.member_ids :
+            for user in self.server.users :
+                if user.id == member_id :
+                    print(str(n)+'.',user.name)
+                    n+=1
 
-def clear_terminal():
-    # Efface le terminal en fonction du système d'exploitation
-    os.system('cls' if os.name == 'nt' else 'clear')
+        print(f'\n{GRAY}o. add member')
+        print(f'x. Go back{RESET}\n')
+
+        #possibilité d'un message d'erreur
+        if self.unknown_see_members == True : 
+            print(rf'{RED}/!\ Unknown option : {self.choice_see_members} {RESET}')
+            self.choice_see_members = input( 'Select an option: : ')
+        else :
+            self.choice_see_members = input('\nSelect an option: : ')
+
+        #réaction selon l'option choisie
+        if self.choice_see_members == 'o' :
+            self.unknown_see_members = False
+            self.new_member(channel)
+        elif self.choice_see_members =='x' :
+            self.unknown_see_members = False
+            self.show_messages(str(channel.id))
+        else : 
+            self.unknown_see_members = True
+            self.see_members(channel)
+
+    def new_member(self, channel : Channel) :
+
+        #mise en page
+        self.clear_terminal()
+        print(f'\n{BOLD}=== NEW {channel.name} MEMEBR ==={RESET}\n' )
+
+        #possibilité d'un message d'erreur
+        if self.known_new_member == True : 
+            print(rf'{RED}/!\ Already registered memebr : {self.choice_new_members} {RESET}')
+            self.choice_new_members = input( 'New member name: ')
+        elif self.unknown_new_member == True :
+            print(rf'{RED}/!\ Unknown username : {self.choice_new_members} {RESET}')
+            self.choice_new_members = input( 'New member name: ')
+        else :
+            self.choice_new_members = input('\nNew member name: ')
+
+        #réaction selon l'option choisie
+        id_to_name = { user.id : user.name for user in self.server.users }
+        name_to_id = { user.name : user.id for user in self.server.users }
+        if self.choice_new_members in {id_to_name[id] for id in channel.member_ids}:
+            self.known_new_member = True
+            self.new_member(channel)
+        elif self.choice_new_members not in name_to_id :
+            self.unknown_new_member = True
+            self.new_member(channel)
+        else : 
+            self.known_new_member = False
+            self.unknown_new_member = False
+            channel.member_ids.append(name_to_id[self.choice_new_members])
+            self.see_members(channel)
+
+    def save(self):
+            new_server = {
+            'users': [user.to_dict() for user in self.server.users],
+            'channels': [channel.to_dict() for channel in self.server.channels],
+            'messages': [message.to_dict() for message in self.server.messages],
+            }
+
+            with open(self.server.file_name, 'w') as json_file:
+                json.dump(new_server, json_file)
+
+    @staticmethod
+
+    def clear_terminal():
+            # Efface le terminal en fonction du système d'exploitation
+            os.system('cls' if os.name == 'nt' else 'clear')
 
 
 
@@ -451,10 +432,10 @@ server_file_name = args.server
 
 #affichage d'un message d'erreur si le sever n'est pas renseigné
 if server_file_name == None :
-    print('TypeError: Pas de server selectionné, correction proposée : \npython messenger.py -s <server path>')
+    print('TypeError: Pas de server selectionné, correction proposée : python messenger.py -s <server path>')
     sys.exit(1)
 else : 
-    clear_terminal()
+    Client.clear_terminal()
     print ('\nLe server ouvert est : ', server_file_name)
     time.sleep(1)
 
@@ -462,11 +443,12 @@ else :
 with open(server_file_name) as json_file :
     server_dict = json.load(json_file)
 
-server = Server.from_dict(server_dict)
+client = Client(Server.from_dict(server_file_name, server_dict))
+
 
 #début du programme
-clear_terminal()
-identification()
+client.clear_terminal()
+client.identification()
 
 
 
